@@ -1,35 +1,43 @@
 # OTP Phone Verification
 
-An Expo and React Native mobile application that verifies phone numbers with Firebase
+An Expo and React Native Web application that verifies phone numbers with Firebase
 Authentication. Users enter an international phone number, receive a one-time password over SMS,
-and confirm the code in the app.
+and confirm the code in the browser.
 
-## Run the app
+## Firebase setup
 
-1. Install dependencies:
+This project uses the **Firebase Web SDK**, not native Android Firebase libraries.
 
-   ```bash
-   npm install
-   ```
+1. Open the Firebase Console and select your project.
+2. In **Authentication > Sign-in method**, enable the **Phone** provider.
+3. In **Project settings > Your apps**, create or select a **Web app** (`</>`).
+4. Add `localhost` and the deployed web domain under **Authentication > Settings > Authorized domains**.
+5. Copy `.env.example` to `.env.local` and fill in the six values from the Web app config:
+   `apiKey`, `authDomain`, `projectId`, `storageBucket`, `messagingSenderId`, and `appId`.
+6. For development, configure Firebase test phone numbers in Authentication settings to avoid
+   sending real SMS messages.
 
-2. Enable **Phone** in Firebase Console under Authentication > Sign-in method.
+If the app shows `auth/configuration-not-found`, verify that the Phone provider is enabled for
+the same Firebase project referenced by `projectId` and `authDomain`, then restart Expo with
+`npx expo start --web --clear`. An `auth/unauthorized-domain` error means the current browser
+host must be added to Firebase Authentication's Authorized domains.
 
-3. Confirm that `google-services.json` belongs to the Android application id configured in
-   `app.json`.
+The Firebase Web API key is intended to be shipped to the browser. Do not put service-account
+credentials or other private keys in `.env.local`.
 
-4. Build and start the native Android app (Firebase Phone Auth requires a development build):
+## Run the web app
 
-   ```bash
-   npx expo run:android
-   ```
+```bash
+npm install
+npx expo start --web
+```
 
-Enter a phone number in international format, such as `+923001234567`. Firebase sends the SMS
-and the app verifies the six-digit code. For development, Firebase test phone numbers can be
-configured in the Firebase Console to avoid sending real SMS messages.
+Open the displayed local URL, enter a phone number in international format such as
+`+923001234567`, request the SMS, enter the six-digit code, and press **Verify code**.
 
 ## Submission evidence
 
-Capture the following sequence on a physical Android device or development build:
+Capture the complete flow for submission:
 
 1. Phone number screen with the number entered.
 2. SMS inbox showing the received Firebase OTP.

@@ -6,19 +6,6 @@
     "orientation": "portrait",
     "scheme": "quiz4otp",
     "userInterfaceStyle": "automatic",
-    "android": {
-      "package": "com.mahyarzeb.quiz4otp",
-      "googleServicesFile": "./google-services.json",
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png"
-      },
-      "predictiveBackGestureEnabled": false
-    },
-    "plugins": [
-      "expo-router",
-      "@react-native-firebase/app",
-      "@react-native-firebase/auth"
-    ]
+    "plugins": ["expo-router"]
   }
 }

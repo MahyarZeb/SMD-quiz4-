@@ -1,4 +1,4 @@
-import { getAuth, signInWithPhoneNumber, type ConfirmationResult } from '@react-native-firebase/auth';
+import { signInWithPhoneNumber } from 'firebase/auth';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -13,9 +13,34 @@ import {
   View,
 } from 'react-native';
 
-const auth = getAuth();
+import {
+  clearRecaptchaVerifier,
+  getFirebaseAuth,
+  getRecaptchaVerifier,
+  type ConfirmationResult,
+} from '@/lib/firebase';
 
 function getErrorMessage(error: unknown) {
+  const firebaseCode =
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    typeof error.code === 'string'
+      ? error.code
+      : '';
+
+  if (firebaseCode === 'auth/configuration-not-found') {
+    return 'Phone sign-in is not enabled in Firebase. Enable the Phone provider in Firebase Console > Authentication > Sign-in method, then restart the Expo web server.';
+  }
+
+  if (firebaseCode === 'auth/operation-not-allowed') {
+    return 'Phone sign-in is disabled for this Firebase project. Enable the Phone provider in Firebase Console > Authentication > Sign-in method.';
+  }
+
+  if (firebaseCode === 'auth/unauthorized-domain') {
+    return 'This website is not authorized in Firebase. Add localhost (or your deployed domain) under Authentication > Settings > Authorized domains.';
+  }
+
   if (error instanceof Error && error.message) {
     return error.message;
   }
@@ -43,7 +68,9 @@ export default function Index() {
     setIsLoading(true);
 
     try {
-      const result = await signInWithPhoneNumber(auth, normalizedPhoneNumber);
+      const auth = getFirebaseAuth();
+      const verifier = getRecaptchaVerifier(auth);
+      const result = await signInWithPhoneNumber(auth, normalizedPhoneNumber, verifier);
       setConfirmation(result);
     } catch (error) {
       setErrorMessage(getErrorMessage(error));
@@ -83,6 +110,7 @@ export default function Index() {
   };
 
   const startOver = () => {
+    clearRecaptchaVerifier();
     setConfirmation(null);
     setVerificationCode('');
     setIsVerified(false);
@@ -179,6 +207,7 @@ export default function Index() {
           )}
 
           <Text style={styles.footer}>Protected by Firebase Authentication</Text>
+          <View nativeID="recaptcha-container" style={styles.recaptchaContainer} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -395,5 +424,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 28,
     textAlign: 'center',
+  },
+  recaptchaContainer: {
+    height: 1,
+    opacity: 0,
+    width: 1,
   },
 });
